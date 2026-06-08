@@ -26,3 +26,22 @@ To keep our main code stable and avoid merge conflicts, we will use a **Feature 
 4. **Push and Open a Pull Request (PR):** Push your branch to GitHub and open a PR for review. Do not merge directly into main without a quick review from the other collaborator!
    ```bash
    git push origin feature/your-feature-name
+
+---
+
+## Python Setup
+
+This scraper expects a local `.env` file with sensitive values, not hardcoded credentials.
+
+Create a `.env` file with:
+
+```env
+MY_EMAIL=your_email@example.com
+MY_PASSWORD=your_app_password
+```
+
+Install the dependencies with:
+
+```bash
+pip install -r requirements.txt
+```

@@ -1,9 +1,11 @@
 import os
 import smtplib
 
-import requests
-from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+
+from db import add_product, initialize_db, log_price
+from scraper import scrape_amazon_price
+
 
 load_dotenv()
 
@@ -23,24 +25,30 @@ headers = {
     ),
 }
 
-response = requests.get(URL, headers=headers)
-web_page = response.text
-soup = BeautifulSoup(web_page, "html.parser")
-price = soup.find(class_="a-offscreen").get_text()
-price_without_currency = price.split("$")[1]
-price_as_float = float(price_without_currency)
-print(price_as_float)
+initialize_db()
+product_id = add_product(
+    title="Amazon product",
+    url=URL,
+    target_price=80,
+    platform="Amazon",
+)
 
-if price_as_float < 80:
+price_as_float = scrape_amazon_price(URL, headers)
+
+if price_as_float is None:
+    print("waiting for a valid price")
+elif price_as_float < 80:
     print("time to send mail")
+    log_price(product_id, price_as_float)
     connection = smtplib.SMTP("smtp.gmail.com", 587)
     connection.starttls()
     connection.login(user=MY_EMAIL, password=MY_PASSWORD)
     connection.sendmail(
         from_addr=MY_EMAIL,
-        to_addrs="shekharadhikary024@gmail.com",
+        to_addrs="adhikaryswapnanil@gmail.com",
         msg="the product is price is at all time low , buy from amazon",
     )
 else:
     print("waiting for price drop")
+    log_price(product_id, price_as_float)
 
