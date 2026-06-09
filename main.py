@@ -11,7 +11,6 @@ load_dotenv()
 
 MY_EMAIL = os.getenv("MY_EMAIL")
 MY_PASSWORD = os.getenv("MY_PASSWORD")
-ALERT_RECIPIENT = os.getenv("ALERT_RECIPIENT", MY_EMAIL)
 
 if not MY_EMAIL or not MY_PASSWORD:
     raise ValueError("Set MY_EMAIL and MY_PASSWORD in your .env file before running the script.")
@@ -28,7 +27,10 @@ HEADERS = {
 
 def send_price_alert(product_title, current_price, target_price, recipient_email):
     message = (
-        f"Subject: Price Alert for {product_title}\n\n"
+        f"Subject: Price Alert for {product_title}\n"
+        f"From: {MY_EMAIL}\n"
+        f"To: {recipient_email}\n"
+        f"\n"
         f"{product_title} is now {current_price}, which is at or below your target price of {target_price}."
     )
 
@@ -65,12 +67,7 @@ def main():
         print(f"Checked Product {product_id}: Current price is {current_price}, Target is {target_price}")
 
         if current_price <= target_price:
-            recipient_email = ALERT_RECIPIENT
-            if not recipient_email:
-                print(f"Alert skipped for Product {product_id}: missing recipient email")
-                continue
-
-            send_price_alert(title or f"Product {product_id}", current_price, target_price, recipient_email)
+            send_price_alert(title or f"Product {product_id}", current_price, target_price, MY_EMAIL)
             print(f"Alert sent for Product {product_id}")
 
 
