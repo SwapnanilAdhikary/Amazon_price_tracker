@@ -13,7 +13,7 @@ def initialize_db():
             CREATE TABLE IF NOT EXISTS products (
                 id INTEGER PRIMARY KEY,
                 title TEXT,
-                url TEXT,
+                url TEXT UNIQUE,
                 target_price REAL,
                 platform TEXT
             )
@@ -39,10 +39,24 @@ def add_product(title, url, target_price, platform):
             """
             INSERT INTO products (title, url, target_price, platform)
             VALUES (?, ?, ?, ?)
+            ON CONFLICT(url) DO UPDATE SET target_price=excluded.target_price
             """,
             (title, url, target_price, platform),
         )
         return cursor.lastrowid
+
+
+def get_all_products():
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            SELECT id, title, url, target_price, platform
+            FROM products
+            ORDER BY id
+            """
+        )
+        return cursor.fetchall()
 
 
 def log_price(product_id, price):
