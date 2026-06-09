@@ -45,6 +45,19 @@ def add_product(title, url, target_price, platform):
         return cursor.lastrowid
 
 
+def get_all_products():
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            SELECT id, title, url, target_price, platform
+            FROM products
+            ORDER BY id
+            """
+        )
+        return cursor.fetchall()
+
+
 def log_price(product_id, price):
     with sqlite3.connect(DB_PATH) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
