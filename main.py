@@ -63,12 +63,15 @@ def main():
             print(f"Checked Product {product_id}: Current price unavailable, Target is {target_price}")
             continue
 
+        previous_price = db.get_latest_price(product_id)
         db.log_price(product_id, current_price)
         print(f"Checked Product {product_id}: Current price is {current_price}, Target is {target_price}")
 
-        if current_price <= target_price:
+        if current_price <= target_price and (previous_price is None or current_price < previous_price):
             send_price_alert(title or f"Product {product_id}", current_price, target_price, MY_EMAIL)
             print(f"Alert sent for Product {product_id}")
+        elif current_price <= target_price:
+            print("Price remains stable at sale threshold. Skipping email spam.")
 
 
 if __name__ == "__main__":

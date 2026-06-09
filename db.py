@@ -20,6 +20,9 @@ def initialize_db():
             """
         )
         connection.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_url ON products(url);"
+        )
+        connection.execute(
             """
             CREATE TABLE IF NOT EXISTS price_history (
                 id INTEGER PRIMARY KEY,
@@ -35,15 +38,23 @@ def initialize_db():
 def add_product(title, url, target_price, platform):
     with sqlite3.connect(DB_PATH) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
-        cursor = connection.execute(
+        connection.execute(
             """
             INSERT INTO products (title, url, target_price, platform)
             VALUES (?, ?, ?, ?)
-            ON CONFLICT(url) DO UPDATE SET target_price=excluded.target_price
+            ON CONFLICT(url) DO UPDATE SET
+                title=excluded.title,
+                target_price=excluded.target_price,
+                platform=excluded.platform
             """,
             (title, url, target_price, platform),
         )
-        return cursor.lastrowid
+        cursor = connection.execute(
+            "SELECT id FROM products WHERE url = ?",
+            (url,),
+        )
+        row = cursor.fetchone()
+        return row[0] if row is not None else None
 
 
 def get_all_products():
@@ -70,3 +81,20 @@ def log_price(product_id, price):
             (product_id, price),
         )
         return cursor.lastrowid
+
+
+def get_latest_price(product_id):
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            SELECT price
+            FROM price_history
+            WHERE product_id = ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT 1
+            """,
+            (product_id,),
+        )
+        row = cursor.fetchone()
+        return row[0] if row is not None else None
