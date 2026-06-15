@@ -3,7 +3,12 @@ import db
 
 def main():
     url = input("Paste the Amazon URL: ").strip()
-    target_price = float(input("Enter your target price: ").strip())
+    while True:
+        try:
+            target_price = float(input("Enter your target price: ").strip())
+            break
+        except ValueError:
+            print("Invalid target price. Please enter numbers only, such as 79.99.")
     title = input("Enter a short product title: ").strip()
     platform = "amazon"
 
