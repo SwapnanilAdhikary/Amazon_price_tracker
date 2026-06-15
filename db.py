@@ -70,6 +70,20 @@ def get_all_products():
         return cursor.fetchall()
 
 
+def get_product_by_id(product_id):
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            SELECT id, title, url, target_price, platform
+            FROM products
+            WHERE id = ?
+            """,
+            (product_id,),
+        )
+        return cursor.fetchone()
+
+
 def log_price(product_id, price):
     with sqlite3.connect(DB_PATH) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
