@@ -1,5 +1,4 @@
-from fastapi import FastAPI
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -60,8 +59,14 @@ def get_product_insight(product_id: int):
         raise HTTPException(status_code=404, detail="Product not found")
 
     _, title, _, _, _ = product
-    metrics = analyzer.calculate_price_metrics(product_id)
-    insight_text = analyzer.generate_product_insight(title or f"Product {product_id}", metrics)
+    try:
+        metrics = analyzer.calculate_price_metrics(product_id)
+        insight_text = analyzer.generate_product_insight(title or f"Product {product_id}", metrics)
+    except (ValueError, ImportError):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI Insights service is currently unavailable due to a backend configuration or API key issue.",
+        )
 
     return {
         "product_id": product_id,

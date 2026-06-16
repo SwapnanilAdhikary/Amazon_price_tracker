@@ -71,7 +71,7 @@ def main():
             send_price_alert(title or f"Product {product_id}", current_price, target_price, MY_EMAIL)
             print(f"Alert sent for Product {product_id}")
         elif current_price <= target_price:
-            print("Price remains stable at sale threshold. Skipping email spam.")
+            print("Product is within target threshold, but no new price drop detected. Skipping email alert.")
 
 
 if __name__ == "__main__":

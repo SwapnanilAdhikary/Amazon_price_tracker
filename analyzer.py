@@ -1,4 +1,5 @@
 import os
+import logging
 import sqlite3
 
 from dotenv import load_dotenv
@@ -111,8 +112,7 @@ def generate_product_insight(product_title, metrics):
         if content:
             return content.strip()
     except Exception:
-        # LLM INTEGRATION: If you want hard failures instead of graceful fallback, re-raise here.
-        pass
+        logging.exception("Failed to generate AI product insight due to an external API or network error.")
 
     if current_price is None:
         return f"{product_title}: price data is missing, so analyze further before making a move. Analyze Further"
