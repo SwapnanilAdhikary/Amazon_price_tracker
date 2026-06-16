@@ -31,6 +31,19 @@ def initialize_db():
                 )
                 """
             )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS ai_analysis (
+                    id INTEGER PRIMARY KEY,
+                    product_id INTEGER,
+                    recommendation TEXT,
+                    deal_score INTEGER,
+                    payload TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(product_id) REFERENCES products(id)
+                )
+                """
+            )
     except sqlite3.Error:
         print(
             "Database initialization failed. If this is a legacy developer database with duplicate rows or a corrupted schema, delete the local 'tracker.db' file and restart the application."
@@ -114,3 +127,48 @@ def get_latest_price(product_id):
         )
         row = cursor.fetchone()
         return row[0] if row is not None else None
+
+
+def get_price_history(product_id):
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            SELECT id, product_id, price, timestamp
+            FROM price_history
+            WHERE product_id = ?
+            ORDER BY timestamp ASC, id ASC
+            """,
+            (product_id,),
+        )
+        return cursor.fetchall()
+
+
+def log_ai_analysis(product_id, recommendation, deal_score, payload_json_string):
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            INSERT INTO ai_analysis (product_id, recommendation, deal_score, payload)
+            VALUES (?, ?, ?, ?)
+            """,
+            (product_id, recommendation, deal_score, payload_json_string),
+        )
+        return cursor.lastrowid
+
+
+def get_latest_ai_analysis(product_id):
+    with sqlite3.connect(DB_PATH) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        cursor = connection.execute(
+            """
+            SELECT id, product_id, recommendation, deal_score, payload, timestamp
+            FROM ai_analysis
+            WHERE product_id = ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT 1
+            """,
+            (product_id,)
+        )
+        row = cursor.fetchone()
+        return tuple(row) if row is not None else None

@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import sqlite3
 
@@ -77,6 +78,15 @@ def generate_product_insight(product_title, metrics):
     historical_min = metrics.get("historical_min")
     average_price = metrics.get("average_price")
 
+    fallback_insight = {
+        "recommendation": "NEUTRAL",
+        "confidence": 0.0,
+        "predicted_direction": "stable",
+        "predicted_range": {"low": 0.0, "high": 0.0},
+        "deal_score": 0,
+        "rationale": "Unable to generate a reliable AI insight from the current model response.",
+    }
+
     def _fmt_price(value):
         if value is None:
             return "N/A"
@@ -85,11 +95,9 @@ def generate_product_insight(product_title, metrics):
     strict_prompt = (
         "You are a cynical, smart e-commerce shopping assistant. "
         "Use only the provided pricing data. "
-        "Return at most 2 sentences total. "
-        "One sentence should deliver the insight in a punchy tone. "
-        "The final sentence must end with exactly one recommendation label from this list: "
-        "Buy Now, Wait, Analyze Further. "
-        "Do not add bullets, lists, hashtags, or extra labels."
+        "Return only valid JSON that strictly matches this schema layout: "
+        '{"recommendation":"BUY_NOW|WAIT|NEUTRAL","confidence":0.0,"predicted_direction":"down|up|stable","predicted_range":{"low":0.0,"high":0.0},"deal_score":0,"rationale":"string explanation"}. '
+        "Do not wrap the JSON in markdown, code fences, or extra commentary."
     )
 
     user_prompt = (
@@ -106,25 +114,57 @@ def generate_product_insight(product_title, metrics):
         response = client.models.generate_content(
             model=model_name,
             contents=f"{strict_prompt}\n\n{user_prompt}",
+            response_mime_type="application/json",
         )
 
         content = getattr(response, "text", None)
         if content:
-            return content.strip()
+            parsed_content = json.loads(content.strip())
+            recommendation = parsed_content["recommendation"]
+            confidence = parsed_content["confidence"]
+            predicted_direction = parsed_content["predicted_direction"]
+            predicted_range = parsed_content["predicted_range"]
+            deal_score = parsed_content["deal_score"]
+            rationale = parsed_content["rationale"]
+
+            return {
+                "recommendation": recommendation,
+                "confidence": confidence,
+                "predicted_direction": predicted_direction,
+                "predicted_range": {
+                    "low": predicted_range["low"],
+                    "high": predicted_range["high"],
+                },
+                "deal_score": deal_score,
+                "rationale": rationale,
+            }
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+        return fallback_insight
     except Exception:
         logging.exception("Failed to generate AI product insight due to an external API or network error.")
+        return fallback_insight
 
     if current_price is None:
-        return f"{product_title}: price data is missing, so analyze further before making a move. Analyze Further"
+        return fallback_insight
 
     if historical_max is not None and current_price <= historical_max * 0.9:
-        recommendation = "Buy Now"
+        recommendation = "BUY_NOW"
         verdict = "The price is sitting well below the recent ceiling, which is usually where shoppers stop overthinking."
     elif average_price is not None and current_price > average_price:
-        recommendation = "Wait"
+        recommendation = "WAIT"
         verdict = "The current price is above average, so patience still has a job to do here."
     else:
-        recommendation = "Analyze Further"
+        recommendation = "NEUTRAL"
         verdict = "The numbers are not screaming either way, so a closer look is still warranted."
 
-    return f"{verdict} {recommendation}"
+    return {
+        "recommendation": recommendation,
+        "confidence": 0.5,
+        "predicted_direction": "stable",
+        "predicted_range": {
+            "low": current_price if current_price is not None else 0.0,
+            "high": current_price if current_price is not None else 0.0,
+        },
+        "deal_score": 50 if recommendation == "NEUTRAL" else 75 if recommendation == "BUY_NOW" else 25,
+        "rationale": verdict,
+    }
