@@ -1,0 +1,28 @@
+{
+	"manifest_version": 3,
+	"name": "Smart Price Tracker",
+	"version": "1.0",
+	"description": "Track prices and monitor product changes from a browser popup.",
+	"action": {
+		"default_popup": "popup.html"
+	},
+	"permissions": [
+		"activeTab"
+	],
+	"host_permissions": [
+		"http://127.0.0.1:8000/*"
+	],
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.amazon.in/*"
+			],
+			"js": [
+				"content.js"
+			],
+			"css": [
+				"sidebar.css"
+			]
+		}
+	]
+}
