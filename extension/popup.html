@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Smart Price Tracker</title>
+	<style>
+		:root {
+			color-scheme: light;
+			--bg: #f4f7fb;
+			--surface: #ffffff;
+			--text: #142033;
+			--muted: #617089;
+			--border: #d9e2ef;
+			--accent: #1f6feb;
+			--accent-soft: #e8f0fe;
+			--shadow: 0 10px 24px rgba(20, 32, 51, 0.08);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			width: 350px;
+			margin: 0;
+			padding: 0;
+			font-family: Arial, Helvetica, sans-serif;
+			background: linear-gradient(180deg, #eef3f9 0%, #f7f9fc 100%);
+			color: var(--text);
+		}
+
+		.popup {
+			min-height: 100vh;
+			background: var(--bg);
+		}
+
+		.header {
+			padding: 16px 18px;
+			background: linear-gradient(135deg, var(--accent) 0%, #1454c4 100%);
+			color: #fff;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 18px;
+			line-height: 1.2;
+			font-weight: 700;
+		}
+
+		.header p {
+			margin: 6px 0 0;
+			font-size: 12px;
+			line-height: 1.4;
+			color: rgba(255, 255, 255, 0.86);
+		}
+
+		.content {
+			padding: 14px;
+		}
+
+		.panel {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: 14px;
+			box-shadow: var(--shadow);
+			overflow: hidden;
+		}
+
+		.panel-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 12px 14px;
+			border-bottom: 1px solid var(--border);
+			background: var(--accent-soft);
+		}
+
+		.panel-head strong {
+			font-size: 13px;
+			letter-spacing: 0.02em;
+		}
+
+		.badge {
+			padding: 4px 8px;
+			border-radius: 999px;
+			background: #fff;
+			color: var(--accent);
+			border: 1px solid rgba(31, 111, 235, 0.18);
+			font-size: 11px;
+			font-weight: 700;
+		}
+
+		#product-list {
+			padding: 10px 12px 12px;
+			display: grid;
+			gap: 10px;
+			min-height: 120px;
+		}
+
+		.product-card {
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+			padding: 12px;
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+		}
+
+		.product-icon {
+			flex: 0 0 34px;
+			width: 34px;
+			height: 34px;
+			border-radius: 10px;
+			background: linear-gradient(135deg, var(--accent) 0%, #7fb0ff 100%);
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+		}
+
+		.product-details {
+			min-width: 0;
+			flex: 1;
+		}
+
+		.ai-badge {
+			display: inline-flex;
+			align-items: center;
+			margin: 0 0 6px;
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: #eef6ff;
+			border: 1px solid rgba(31, 111, 235, 0.16);
+			color: var(--accent);
+			font-size: 10px;
+			font-weight: 700;
+			letter-spacing: 0.03em;
+			text-transform: uppercase;
+		}
+
+		.product-title {
+			margin: 0;
+			font-size: 13px;
+			line-height: 1.4;
+			font-weight: 700;
+			color: var(--text);
+			word-break: break-word;
+		}
+
+		.product-meta {
+			margin: 4px 0 0;
+			font-size: 12px;
+			line-height: 1.4;
+			color: var(--muted);
+		}
+
+		.empty-state {
+			margin: 0;
+			padding: 18px 14px;
+			border: 1px dashed var(--border);
+			border-radius: 12px;
+			color: var(--muted);
+			font-size: 13px;
+			line-height: 1.5;
+			text-align: center;
+			background: #fafcff;
+		}
+	</style>
+</head>
+<body>
+	<div class="popup">
+		<header class="header">
+			<h1>Smart Price Tracker</h1>
+			<p>Monitor tracked products and price changes at a glance.</p>
+		</header>
+
+		<main class="content">
+			<section class="panel" aria-label="Tracked products">
+				<div class="panel-head">
+					<strong>Tracked Products</strong>
+					<span class="badge">Live</span>
+				</div>
+				<div id="product-list">
+					<p class="empty-state">Your tracked products will appear here.</p>
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<script src="popup.js"></script>
+</body>
+</html>
